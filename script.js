@@ -1,65 +1,70 @@
-let array = ['Rock', 'Paper', 'Scissors'];
-let playerWins = 0;
-let compWins = 0;
+const optionBtn = document.querySelectorAll('div.optionBtn button');
+const roundResults = document.querySelector('#roundResults');
+const playerPoints = document.querySelector('#playerScore');
+const computerPoints = document.querySelector('#computerScore');
+const resetBtn = document.querySelector('#reset');
 
-function getComputerChoice(){
-    let randInt = Math.floor(Math.random() * array.length);
-    let choice = array[randInt];
-    return choice;
+//refresh page for new game
+resetBtn.addEventListener('click',() => location.reload());
+  
+optionBtn.forEach(button => { button.addEventListener('click', getPlayerChoice) });
+
+let computerChoices = [{choice: 'Rock', value: 0}, {choice: 'Paper', value: 1}, {choice: 'Scissors', value: 2}];
+let playerScore = 0;
+let compScore = 0;
+let playerChoice;
+
+function computerPlay () {
+  let result = computerChoices[Math.floor(Math.random() * computerChoices.length)];
+  return result;
 }
 
-function playRound(playerSelection, computerSelection){
-    playerSelection = playerSelection.toUpperCase();
-    computerSelection = computerSelection.toUpperCase();
-    if (playerSelection === 'ROCK') {
-        if (computerSelection === 'SCISSORS'){
-            alert ('You win! Rock beats scissors');
-            playerWins += 1;
-        } else if (computerSelection === 'PAPER') {
-            alert ('You lose! Paper beats rock');
-            compWins += 1;
-        } else {
-            alert ('It is a tie!');
-        }
+function playRound (playerSelection, computerSelection) {
+  let roundWinCombo = `${playerSelection}-${computerSelection.value}`;
+  let playerWinCombo = ['1-0', '0-2', '2-1'];
+
+    if (Number(playerSelection) === computerSelection.value) {
+      playerPoints.textContent = ++playerScore
+      computerPoints.textContent = ++compScore
+      roundResults.textContent = "Tie!"
+    }else if (playerWinCombo.includes(roundWinCombo)) {
+        playerPoints.textContent = ++playerScore
+        roundResults.textContent = `You win! ${playerChoice} beats ${computerSelection.choice}`;
+    }else {
+        computerPoints.textContent = ++compScore
+        roundResults.textContent = `You lose! ${computerSelection.choice} beats ${playerChoice}`;
     }
-    if (playerSelection === 'PAPER') {
-        if (computerSelection === 'ROCK') {
-            alert ('You win! Paper beats rock');
-            playerWins += 1;
-        } else if (computerSelection === 'SCISSORS') {
-            alert ('You lose! Scissors beat paper');
-            compWins += 1;
-        } else {
-            alert ('It is a tie!');
-        }
-    }
-    if (playerSelection === "SCISSORS") {
-        if (computerSelection === 'PAPER') {
-            alert ('You win! Scissors beat paper');
-            playerWins += 1;
-        } else if (computerSelection === 'ROCK') {
-            alert ('You lose! Rock beats scissors');
-            compWins += 1;
-        } else {
-            alert ('It is a tie!');
-        }
-    }
+ checkWinner();
 }
 
-function game () {
-    let numGames = 0;
-    while (numGames < 5) {
-        let playerSelection = prompt('Please enter an option to play: ');
-        let computerSelection = getComputerChoice();
-        playRound(playerSelection, computerSelection)
-        numGames++;
-        alert('Computer: ' + compWins + ' Player: ' + playerWins);
-    }
-    alert('Game finished!');
+const winnerResults ={
+  computer: ["You lost the game loser!"],
+  player: ["You win!"],
+  tie: ["Tie!"]
 }
-/*let playerSelection = prompt('Please enter an option to play: ');
-let computerSelection = getComputerChoice();
-console.log(playerSelection);
-console.log(computerSelection);
-console.log(playRound(playerSelection, computerSelection));*/
-console.log(game())
+
+function checkWinner() {
+  if (compScore === 5 || playerScore === 5) {
+    if (compScore === playerScore){
+      updateWinner('tie')
+    }else{
+      let win = `${(compScore > playerScore) ? 'computer' : 'player'}`;
+      updateWinner(win);
+    }
+  }
+}
+
+function updateWinner(winner){
+  roundResults.textContent = winnerResults[winner][0];
+  roundResults.style.color = winnerResults[winner][1];
+
+  optionBtn.forEach(button => {
+    button.removeEventListener('click', getPlayerChoice);
+  });
+}
+
+function getPlayerChoice(e) {
+  let playerSelection= (e.target.id);
+  playerChoice = e.target.textContent;
+  playRound(playerSelection, computerPlay());
+}
